@@ -38,7 +38,7 @@ void mmult4x4_ps(const float **A, const float **B, float **C) {
 }
 
 void mmult4x4_ps2(const float **A, const float **B, float **C) {
-  // Bit faster but requires that C does not overlap A or B
+  // Bit faster but requires that C does not overlap A
   int i,j;
   __m128 a, b[4], c;
   for (i=0; i<4; i++) {
