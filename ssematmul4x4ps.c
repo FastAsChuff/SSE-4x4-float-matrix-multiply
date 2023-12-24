@@ -36,6 +36,51 @@ void mmult4x4_ps(const float **A, const float **B, float **C) {
     _mm_storeu_ps(C[i], c[i]);
   }
 }
+
+void mmult4x4_ps2(const float **A, const float **B, float **C) {
+  // Bit faster but requires that C does not overlap A or B
+  int i,j;
+  __m128 a, b[4], c;
+  for (i=0; i<4; i++) {
+    b[i] = _mm_loadu_ps(B[i]);
+  }
+  for (i=0; i<4; i++) {
+    c = _mm_set1_ps(0);
+    for (j=0; j<4; j++) {
+      a = _mm_set1_ps(A[i][j]);
+      c = _mm_fmadd_ps(a, b[j], c);
+    }
+    _mm_storeu_ps(C[i], c);
+  }
+}
 #else
-void (*mmult4x4_ps)(const float **A, const float **B, float **C) = &mmult4x4_ps_naive;
+//Using the function pointers instead makes it much slower, so just copy the naive function.
+//void (*mmult4x4_ps)(const float **A, const float **B, float **C) = &mmult4x4_ps_naive;
+//void (*mmult4x4_ps2)(const float **A, const float **B, float **C) = &mmult4x4_ps_naive;
+void mmult4x4_ps(const float **A, const float **B, float **C) {
+  int i,j,k;
+  float sum;
+  for (i=0; i<4; i++) {
+    for (j=0; j<4; j++) {
+      sum = 0.0f;
+      for (k=0; k<4; k++) {
+        sum += A[i][k]*B[k][j];
+      }
+      C[i][j] = sum;
+    }
+  }
+}
+void mmult4x4_ps2(const float **A, const float **B, float **C) {
+  int i,j,k;
+  float sum;
+  for (i=0; i<4; i++) {
+    for (j=0; j<4; j++) {
+      sum = 0.0f;
+      for (k=0; k<4; k++) {
+        sum += A[i][k]*B[k][j];
+      }
+      C[i][j] = sum;
+    }
+  }
+}
 #endif
